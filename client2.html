@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Websocket test</title>
+</head>
+<body style="width:640px;height:480px;">
+  <div id="messages">
+  </div>
+  <script src="jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript" charset="utf-8">
+$(function() {
+
+    var socket = new WebSocket("ws://localhost:8080/channel2");
+
+    socket.onopen = function(event) {
+        console.log(event);
+    };
+
+    socket.onmessage = function(event) {
+        console.log(event.datac);
+        $("#messages").append(event.data + "<br />");
+    };
+
+    socket.onclose = function(event) {
+        console.log(event);
+    };
+
+    $("xbody").bind("mousemove", function(event) {
+        var message = {x: event.clientX, y: event.clientY};
+        console.log(JSON.stringify(message));
+        socket.send(JSON.stringify(message));
+    });    
+
+  });
+  
+  </script>
+</body>
+</html>
