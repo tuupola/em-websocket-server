@@ -1,18 +1,32 @@
 require "rubygems"
 require "em-websocket"
 require "json"
+require "logger"
+
+module EventMachine
+  class Channel
+    attr_reader :subs
+  end
+end
 
 EM.run do
   
+  @log = Logger.new("log/websocket.log", "daily")
+  @log.datetime_format = "%F %T"
   @channels = Hash.new
-
-  #EM::PeriodicTimer.new(10) do
-  #  @channels.each do |path, channel|
-  #    channel.push  "#{path} The time is now #{Time.now}".to_json
-  #  end
-  #end
+  @messages    = 0
   
-  EM::WebSocket.start(:host => "0.0.0.0", :port => 8080, :debug => true) do |socket|
+
+  EM::PeriodicTimer.new(10) do
+    @subscribers = 0
+    @channels.each do |path, channel|
+      @subscribers += channel.subs.count
+    end
+    @log.debug "Channels #{@channels.count}, subscribers #{@subscribers}, messages per second #{@messages / 10}."
+    @messages    = 0
+  end
+  
+  EM::WebSocket.start(:host => "0.0.0.0", :port => 8080, :debug => false) do |socket|
   
     socket.onopen do
 
@@ -22,16 +36,16 @@ EM.run do
         socket.send message 
       end
       
-      puts payload[:server] = "#{sid} connected."
+      payload[:server] = "#{sid} connected."
       channel_for_socket(socket).push payload.to_json
-      
       socket.onmessage do |data| 
         channel_for_socket(socket).push data
+        @messages += channel_for_socket(socket).subs.count
       end
 
       socket.onclose do
         channel_for_socket(socket).unsubscribe(sid)
-        puts payload[:server] = "#{sid} disconnected."
+        payload[:server] = "#{sid} disconnected."
         channel_for_socket(socket).push payload.to_json
       end
     
