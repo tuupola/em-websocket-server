@@ -1,0 +1,27 @@
+h1. Usage
+
+To run the server do a git clone and run it from commandline. Server supports channels. When a channel receives a message it is broadcasted to all clients connected to that channel.
+
+<pre>
+ > git clone git://github.com/tuupola/em-websocket-server.git
+ > cd em-websocket-server
+ > ruby server.rb
+</pre>
+
+Then assuming you run the server at localhost you can connect from JavaScript with something like:
+
+<pre>
+ var socket = new WebSocket("ws://localhost:8080/channel");
+
+ socket.onopen = function(event) {
+    console.log(event);
+ };
+
+ socket.onmessage = function(event) {
+     console.log(event);
+ };
+
+ socket.onclose = function(event) {
+     console.log(event);
+ };
+</pre>
