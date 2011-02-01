@@ -17,12 +17,12 @@ EM.run do
   @messages    = 0
   
 
-  EM::PeriodicTimer.new(10) do
+  EM::PeriodicTimer.new(60) do
     @subscribers = 0
     @channels.each do |path, channel|
       @subscribers += channel.subs.size
     end
-    @log.debug "Channels #{@channels.size}, subscribers #{@subscribers}, messages per second #{@messages / 10}."
+    @log.debug "#{@subscribers} users generating #{@messages / 60} messages per second."
     @messages    = 0
   end
   
@@ -36,7 +36,7 @@ EM.run do
         socket.send message 
       end
       
-      payload[:server] = "#{sid} connected."
+      @log.info payload[:server] = "#{sid} connected."
       channel_for_socket(socket).push payload.to_json
       socket.onmessage do |data| 
         channel_for_socket(socket).push data
@@ -45,14 +45,14 @@ EM.run do
 
       socket.onclose do
         channel_for_socket(socket).unsubscribe(sid)
-        payload[:server] = "#{sid} disconnected."
+        @log.info payload[:server] = "#{sid} disconnected."
         channel_for_socket(socket).push payload.to_json
       end
     
     end
     
     socket.onerror do |error| 
-      puts "Error: #{error.message}" 
+      @log.error "#{error.message}" 
     end
     
   end
