@@ -25,3 +25,9 @@ Then assuming you run the server at localhost you can connect from JavaScript wi
      console.log(event);
  };
 </pre>
+
+If you want to do quick testing you can use:
+
+<pre>
+ var socket = new WebSocket("ws://ws.appelsiini.net:8080/your/channel/name");
+</pre>
